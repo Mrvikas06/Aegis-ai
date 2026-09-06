@@ -33,8 +33,9 @@ export default function OwnershipBoard({ items = [], participants = [], incident
     const next = { open: "in_progress", in_progress: "done", done: "open" };
     const newStatus = next[item.status] || "open";
     setUpdating(item.id);
+    const apiBase = import.meta.env.VITE_API_URL || "";
     try {
-      await fetch(`http://localhost:4000/api/incidents/${incidentId}/items/${item.id}/status`, {
+      await fetch(`${apiBase}/api/incidents/${incidentId}/items/${item.id}/status`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });

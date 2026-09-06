@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Mic, MicOff, Database, MessageSquare, Copy, Check, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-const API = "http://localhost:4000";
+const API = import.meta.env.VITE_API_URL || "";
 
 export default function LiveChatStream({ timeline = [], onSendChat, incidentId }) {
   const [tab, setTab] = useState("incident");

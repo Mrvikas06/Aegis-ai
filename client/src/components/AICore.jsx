@@ -45,7 +45,8 @@ function RTCSession({ incidentId, isLive, onReady, onError, onAudioLevel, onAgen
 
     const uid = Math.floor(Math.random() * 900000) + 100000;
 
-    fetch("http://localhost:4000/api/agora/token", {
+    const apiBase = import.meta.env.VITE_API_URL || "";
+    fetch(`${apiBase}/api/agora/token`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ incidentId, uid, participantId: "p1" }),
@@ -68,7 +69,7 @@ function RTCSession({ incidentId, isLive, onReady, onError, onAudioLevel, onAgen
         onAgentStatus("starting");
 
         // Start the AI agent (separate call after token)
-        const agentRes = await fetch("http://localhost:4000/api/agora/start-agent", {
+        const agentRes = await fetch(`${apiBase}/api/agora/start-agent`, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
           body:    JSON.stringify({ incidentId }),
@@ -175,7 +176,8 @@ export default function AICore({ state = "idle", incidentId, items = [], onStatu
     setAudioLevel(0);
     // Stop the server-side agent too
     if (incidentId) {
-      fetch("http://localhost:4000/api/agora/stop-agent", {
+      const apiBase = import.meta.env.VITE_API_URL || "";
+      fetch(`${apiBase}/api/agora/stop-agent`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ incidentId }),
       }).catch(() => {});
