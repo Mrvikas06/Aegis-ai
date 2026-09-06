@@ -30,6 +30,23 @@ app.use("/api/agora", buildAgoraRoutes(io, new AgoraIngestionService(incidentMan
 app.use("/api/webhooks", buildWebhookRoutes(io));
 
 import { askAegisChatAsync } from "./services/summary.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import fs from "node:fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.join(__dirname, "../../client/dist");
+
+if (fs.existsSync(clientDistPath)) {
+  console.log(`[aegis-server] Serving static client assets from ${clientDistPath}`);
+  app.use(express.static(clientDistPath));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+}
+
 const standaloneRateLimits = new Map();
 
 app.post("/api/chat", async (req, res, next) => {
@@ -57,7 +74,7 @@ app.post("/api/chat", async (req, res, next) => {
 // Global error handler to prevent server crashes
 app.use((err, req, res, next) => {
   console.error(`[API Error] ${req.method} ${req.url} -`, err.message);
-  if (err.message.startsWith("Unknown incident")) {
+  if (err.message?.startsWith("Unknown incident")) {
     return res.status(404).json({ error: err.message });
   }
   res.status(500).json({ error: err.message || "Internal Server Error" });
