@@ -131,18 +131,12 @@ GROQ_API_KEY=your_groq_api_key_here
 GROQ_MODEL=openai/gpt-oss-20b
 ```
 
-### 2. Deployment Guides (Render & Vercel)
+### 2. Vercel Deployment Instructions
 
-#### Option A: Deploy on Render (Recommended for WebSockets + Full-Stack Node)
-1. Go to [https://dashboard.render.com](https://dashboard.render.com) and click **New + ➔ Blueprints**.
-2. Connect your GitHub repository: `https://github.com/Mrvikas06/Aegis-ai.git`.
-3. Render auto-detects [render.yaml](file:///c:/Users/vikas/Documents/try/aegis-final-complete/render.yaml) and builds the application Docker container automatically.
-4. Add Environment Variable `GROQ_API_KEY` under Environment settings.
-
-#### Option B: Deploy on Vercel
-1. Go to [https://vercel.com/new](https://vercel.com/new) and import `Mrvikas06/Aegis-ai`.
-2. Vercel auto-detects [vercel.json](file:///c:/Users/vikas/Documents/try/aegis-final-complete/vercel.json).
-3. Click **Deploy**.
+1. Go to [https://vercel.com/new](https://vercel.com/new) and import repository **`Mrvikas06/Aegis-ai`**.
+2. Vercel auto-detects [vercel.json](file:///c:/Users/vikas/Documents/try/aegis-final-complete/vercel.json) and [api/index.js](file:///c:/Users/vikas/Documents/try/aegis-final-complete/api/index.js).
+3. Under Environment Variables, add `GROQ_API_KEY`, `AGORA_APP_ID`, `AGORA_APP_CERTIFICATE`, and `AGORA_PIPELINE_ID`.
+4. Click **Deploy**. Vercel will build and assign your production domain.
 
 ### 3. Local Execution Commands
 
