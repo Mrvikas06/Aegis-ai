@@ -1,0 +1,232 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+
+  /* Sleek Dark Obsidian / Indigo Color System */
+  --bg-app: #0C0E17;
+  --bg-surface: #121624;
+  --bg-surface-hover: #1A2035;
+  --bg-elevated: #202842;
+  
+  /* Hairline Borders */
+  --border-line: rgba(255, 255, 255, 0.1);
+  --border-line-hover: rgba(255, 255, 255, 0.22);
+
+  /* Precise Technical Accents */
+  --accent-brand: #6366F1;
+  --accent-blue: #38BDF8;
+  --accent-violet: #8B5CF6;
+  --status-emerald: #10B981;
+  --status-amber: #F59E0B;
+  --status-rose: #F43F5E;
+
+  /* Fonts */
+  --font-sans: 'Geist', 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-app);
+  color: #EDEEF0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle Architectural Grid Background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Typography & Hierarchy ── */
+.text-page-title { font-size: 24px; line-height: 32px; font-weight: 700; letter-spacing: -0.02em; color: #FFFFFF; }
+.text-card-head { font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF; }
+.text-body-sm { font-size: 13px; line-height: 18px; font-weight: 400; color: #94A3B8; }
+.text-code { font-family: var(--font-mono); font-size: 12px; line-height: 16px; }
+
+/* ── Crisp Flat Surfaces & Cards ── */
+.workspace-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-line);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.panel-card {
+  background: rgba(18, 22, 36, 0.85);
+  border: 1px solid var(--border-line);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+
+.panel-card:hover {
+  border-color: var(--border-line-hover);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.12);
+}
+
+.subtle-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-line);
+  border-radius: 8px;
+}
+
+/* ── Refined Control Buttons ── */
+.btn-solid {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #6366F1;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-solid:hover {
+  background: #4F46E5;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+}
+
+.btn-flat {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-line);
+  color: #CBD5E1;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-flat:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+.btn-primary {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 18px rgba(139, 92, 246, 0.5);
+  opacity: 0.95;
+}
+
+.btn-secondary {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-line);
+  color: #E2E8F0;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+/* ── Badges & Status Indicators ── */
+.tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border: 1px solid transparent;
+}
+
+.tag-neutral { background: rgba(255, 255, 255, 0.06); color: #94A3B8; border-color: rgba(255, 255, 255, 0.1); }
+.tag-success { background: rgba(16, 185, 129, 0.15); color: #34D399; border-color: rgba(16, 185, 129, 0.3); }
+.tag-medium { background: rgba(99, 102, 241, 0.15); color: #818CF8; border-color: rgba(99, 102, 241, 0.3); }
+.tag-high { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border-color: rgba(245, 158, 11, 0.3); }
+.tag-critical { background: rgba(244, 63, 94, 0.18); color: #FB7185; border-color: rgba(244, 63, 94, 0.35); }
+
+/* SVG Flow Animations */
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.anim-path-flow {
+  stroke-dasharray: 6 6;
+  animation: dashFlow 1.2s linear infinite;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
