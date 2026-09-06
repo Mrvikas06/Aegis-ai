@@ -256,7 +256,7 @@ export async function askAegisChatAsync(state, userMessage) {
   if (groqKey && groqKey.startsWith("gsk_")) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 900);
+      const timer = setTimeout(() => controller.abort(), 2500);
 
       const model = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
 
@@ -299,13 +299,13 @@ export async function askAegisChatAsync(state, userMessage) {
   if (geminiKey) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 1500);
+      const timer = setTimeout(() => controller.abort(), 2500);
 
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
-        body: JSON.stringify({ contents: [{ parts: [{ text: `You are Aegis AI Incident Commander. Context:\n${context}\n\nUser Message: ${userMessage}` }] }] })
+        body: JSON.stringify({ contents: [{ parts: [{ text: `You are Aegis AI Incident Commander. Context:\n${trimmedContext}\n\nUser Message: ${userMessage}` }] }] })
       });
       clearTimeout(timer);
       const data = await response.json();

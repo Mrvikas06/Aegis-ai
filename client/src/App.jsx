@@ -244,11 +244,17 @@ export default function App() {
     try {
       if (incident?.id) {
         const apiBase = import.meta.env.VITE_API_URL || "";
+        const controller = new AbortController();
+        const fetchTimer = setTimeout(() => controller.abort(), 3000);
+
         const res = await fetch(`${apiBase}/api/incidents/${incident.id}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
           body: JSON.stringify({ text, speakerId: "user" }),
         });
+        clearTimeout(fetchTimer);
+
         if (res.ok) {
           const data = await res.json();
           const replyText = data?.aiItem?.text || data?.aiItem?.summary;
@@ -270,30 +276,28 @@ export default function App() {
       console.warn("Backend chat API note:", e.message || e);
     }
 
-    setTimeout(() => {
-      setAiState("idle");
-      const lower = text.toLowerCase().trim();
-      let reply = `Aegis AI standing by with full read access to all 24 service telemetry streams. How can I assist you with "${text}"?`;
+    setAiState("idle");
+    const lower = text.toLowerCase().trim();
+    let reply = `Aegis AI standing by with full read access to all 24 service telemetry streams. How can I assist you with "${text}"?`;
 
-      if (/^(hi|hello|hey|greetings|yo|sup)$/i.test(lower)) {
-        reply = "Hello! Aegis AI Incident Commander online. I am actively tracking all service dependencies and incident signals. What would you like to inspect?";
-      } else if (lower.includes("status") || lower.includes("broken") || lower.includes("attention")) {
-        reply = "Problem: Payment API error rate spiking at 38%. Suspected cause: Database connection pool maxed out at 200/200 limit. Active fix: Scaling DB connections to 400.";
-      } else if (lower.includes("root cause") || lower.includes("why")) {
-        reply = "Root Cause Analysis (94% confidence): Database connection pool exhaustion caused by unoptimized payout batch sync query locking Postgres primary.";
-      } else if (lower.includes("permission") || lower.includes("access")) {
-        reply = "Permission confirmed: Aegis AI is fully granted unrestricted access to read, inspect, and analyze every element of this website, live chat streams, service dependency graphs, and telemetry logs.";
-      }
+    if (/^(hi|hello|hey|greetings|yo|sup)$/i.test(lower)) {
+      reply = "Hello! Aegis AI Incident Commander online. I am actively tracking all service dependencies and incident signals. What would you like to inspect?";
+    } else if (lower.includes("status") || lower.includes("broken") || lower.includes("attention")) {
+      reply = "Problem: Payment API error rate spiking at 38%. Suspected cause: Database connection pool maxed out at 200/200 limit. Active fix: Scaling DB connections to 400.";
+    } else if (lower.includes("root cause") || lower.includes("why")) {
+      reply = "Root Cause Analysis (94% confidence): Database connection pool exhaustion caused by unoptimized payout batch sync query locking Postgres primary.";
+    } else if (lower.includes("permission") || lower.includes("access")) {
+      reply = "Permission confirmed: Aegis AI is fully granted unrestricted access to read, inspect, and analyze every element of this website, live chat streams, service dependency graphs, and telemetry logs.";
+    }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: reply,
-          showActions: true,
-        },
-      ]);
-    }, 100);
+    setMessages((prev) => [
+      ...prev,
+      {
+        sender: "ai",
+        text: reply,
+        showActions: true,
+      },
+    ]);
   }, [incident]);
 
   const handleCommandSelect = (cmdId) => {
