@@ -73,7 +73,7 @@ export default function App() {
 
   const lastSpokenMsgRef = useRef(null);
 
-  // Auto-speak AI responses aloud during active voice call
+  // Fallback TTS for AI responses only when Agora RTC agent is in stub/fallback mode
   useEffect(() => {
     if (!isCallActive) {
       stopSpeaking();
@@ -82,16 +82,17 @@ export default function App() {
     const lastMsg = messages[messages.length - 1];
     if (lastMsg && lastMsg.sender === "ai" && lastMsg.text !== lastSpokenMsgRef.current) {
       lastSpokenMsgRef.current = lastMsg.text;
-      speakText(lastMsg.text);
+      if (agentStatus === "stub" || agentStatus === "fallback") {
+        speakText(lastMsg.text);
+      }
     }
-  }, [messages, isCallActive]);
+  }, [messages, isCallActive, agentStatus]);
 
   // Voice Call Control Handlers
   const handleStartCall = useCallback(() => {
     setErrorMsg(null);
     setAgentStatus("online");
     setIsCallActive(true);
-    speakText("Agora AI Voice Commander online. How can I help resolve this incident?");
   }, []);
 
   const handleEndCall = useCallback(() => {
