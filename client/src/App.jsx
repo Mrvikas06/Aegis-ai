@@ -19,6 +19,7 @@ import BootSequence from "./components/BootSequence";
 import SideNav from "./components/SideNav";
 import TopBar from "./components/TopBar";
 import AIChatWorkspace, { agoraClient, RTCSessionManager } from "./components/AIChatWorkspace";
+import { speakText, stopSpeaking } from "./lib/tts";
 import AnalyticsSection from "./components/AnalyticsSection";
 import RootCauseVisualizationModal from "./components/RootCauseVisualizationModal";
 import AutoMitigationModal from "./components/AutoMitigationModal";
@@ -70,20 +71,38 @@ export default function App() {
     },
   ]);
 
+  const lastSpokenMsgRef = useRef(null);
+
+  // Auto-speak AI responses aloud during active voice call
+  useEffect(() => {
+    if (!isCallActive) {
+      stopSpeaking();
+      return;
+    }
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && lastMsg.sender === "ai" && lastMsg.text !== lastSpokenMsgRef.current) {
+      lastSpokenMsgRef.current = lastMsg.text;
+      speakText(lastMsg.text);
+    }
+  }, [messages, isCallActive]);
+
   // Voice Call Control Handlers
   const handleStartCall = useCallback(() => {
     setErrorMsg(null);
-    setAgentStatus("connecting");
+    setAgentStatus("online");
     setIsCallActive(true);
+    speakText("Agora AI Voice Commander online. How can I help resolve this incident?");
   }, []);
 
   const handleEndCall = useCallback(() => {
     setIsCallActive(false);
     setAgentStatus("standby");
     setAudioLevel(0);
+    stopSpeaking();
 
     if (incident?.id) {
-      fetch("http://localhost:4000/api/agora/stop-agent", {
+      const apiBase = import.meta.env.VITE_API_URL || "";
+      fetch(`${apiBase}/api/agora/stop-agent`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ incidentId: incident.id }),
@@ -199,7 +218,8 @@ export default function App() {
 
     try {
       if (incident?.id) {
-        const res = await fetch(`http://localhost:4000/api/incidents/${incident.id}/chat`, {
+        const apiBase = import.meta.env.VITE_API_URL || "";
+        const res = await fetch(`${apiBase}/api/incidents/${incident.id}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text, speakerId: "user" }),
@@ -261,7 +281,8 @@ export default function App() {
 
   const handleExportReport = () => {
     if (!incident) return;
-    window.open(`http://localhost:4000/api/incidents/${incident.id}/export`, "_blank");
+    const apiBase = import.meta.env.VITE_API_URL || "";
+    window.open(`${apiBase}/api/incidents/${incident.id}/export`, "_blank");
   };
 
   const handleAddCustomScenario = (scenarioObj) => {

@@ -31,6 +31,7 @@ import AgoraRTC, {
 } from "agora-rtc-react";
 import ServicesFlowchart from "./ServicesFlowchart";
 import { socket } from "../lib/socket";
+import { createSTT } from "../lib/stt";
 
 // Shared Agora RTC Client
 export const agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
@@ -58,7 +59,8 @@ export function RTCSessionManager({
     const uid = Math.floor(Math.random() * 800000) + 100000;
     const targetIncidentId = incidentId || "default-incident";
 
-    fetch("http://localhost:4000/api/agora/token", {
+    const apiBase = import.meta.env.VITE_API_URL || "";
+    fetch(`${apiBase}/api/agora/token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ incidentId: targetIncidentId, uid, participantId: "p1" }),
@@ -77,7 +79,7 @@ export function RTCSessionManager({
         onReady?.();
 
         try {
-          await fetch("http://localhost:4000/api/agora/start-agent", {
+          await fetch(`${apiBase}/api/agora/start-agent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ incidentId: targetIncidentId }),
@@ -174,8 +176,47 @@ export default function AIChatWorkspace({
   onToggleMute,
 }) {
   const [inputText, setInputText] = useState("");
+  const [interimText, setInterimText] = useState("");
+  const [speechVol, setSpeechVol] = useState(0);
   const chatEndRef = useRef(null);
   const BARS = [0.3, 0.7, 0.45, 0.9, 0.6, 0.95, 0.4, 0.8, 0.5, 1.0, 0.75, 0.4, 0.85, 0.55];
+
+  // Continuous Browser Speech Recognition when Voice Call is active & unmuted
+  useEffect(() => {
+    if (!isCallActive || isMuted) {
+      setInterimText("");
+      setSpeechVol(0);
+      return;
+    }
+
+    const stt = createSTT({
+      onResult: ({ text, isFinal }) => {
+        if (isFinal) {
+          setInterimText("");
+          setSpeechVol(0);
+          if (text && text.trim()) {
+            onSendUserMessage?.(text.trim());
+          }
+        } else {
+          setInterimText(text);
+          setSpeechVol(Math.random() * 0.5 + 0.4);
+        }
+      },
+      onWakeWord: (query) => {
+        setInterimText("");
+        onSendUserMessage?.(query || "status");
+      },
+      onError: (err) => {
+        console.warn("[Voice STT]", err);
+      },
+    });
+
+    stt.start();
+
+    return () => {
+      stt.stop();
+    };
+  }, [isCallActive, isMuted, onSendUserMessage]);
 
   // Auto-scroll chat feed
   useEffect(() => {
@@ -213,6 +254,8 @@ export default function AIChatWorkspace({
   const handleStartCall = onStartCall || (() => {});
   const handleEndCall = onEndCall || (() => {});
   const handleToggleMute = onToggleMute || (() => {});
+
+  const currentVol = speechVol > 0 ? speechVol : audioLevel;
 
   return (
     <>
@@ -288,6 +331,21 @@ export default function AIChatWorkspace({
               </motion.div>
             </div>
 
+            {/* Live Interim Transcript Badge when speaking */}
+            <AnimatePresence>
+              {isCallActive && interimText && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  className="mb-1 text-[11px] font-mono text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-3 py-1 rounded-full flex items-center gap-2 max-w-sm truncate shadow-[0_0_15px_rgba(6,182,212,0.3)] shrink-0"
+                >
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0" />
+                  <span className="truncate">Listening: "{interimText}"</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Sound Wave Frequency Bars Visualizer */}
             <div className="flex items-center gap-1 my-1.5 h-5 relative z-10 shrink-0">
               {BARS.map((h, i) => (
@@ -298,7 +356,7 @@ export default function AIChatWorkspace({
                   }`}
                   animate={{
                     height: isCallActive
-                      ? Math.max(4, 20 * h * (1 + audioLevel * 2.5))
+                      ? Math.max(4, 20 * h * (1 + currentVol * 2.5))
                       : 3,
                   }}
                   transition={{ duration: 0.1 }}
@@ -331,7 +389,7 @@ export default function AIChatWorkspace({
 
               {isCallActive && (
                 <button
-                  onClick={() => setIsMuted((p) => !p)}
+                  onClick={handleToggleMute}
                   className={`btn-flat h-8 w-8 p-0 rounded-full flex items-center justify-center ${
                     isMuted ? "bg-amber-500/20 text-amber-400 border-amber-500/40" : "text-zinc-300"
                   }`}
