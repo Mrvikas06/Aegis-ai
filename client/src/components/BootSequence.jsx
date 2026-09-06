@@ -17,14 +17,28 @@ export default function BootSequence({ onDone }) {
   useEffect(() => {
     let t;
     const step = (i) => {
-      if (i >= LINES.length) { setTimeout(() => setDone(true), 400); return; }
-      t = setTimeout(() => { setVisible(i + 1); step(i + 1); }, LINES[i].delay);
+      if (i >= LINES.length) { setDone(true); return; }
+      t = setTimeout(() => { setVisible(i + 1); step(i + 1); }, 150);
     };
     step(0);
-    return () => clearTimeout(t);
-  }, []);
 
-  useEffect(() => { if (done) { setTimeout(onDone, 500); } }, [done, onDone]); // eslint-disable-line
+    // Hard fallback guard: transition to main app in max 1500ms
+    const fallbackTimer = setTimeout(() => {
+      onDone?.();
+    }, 1500);
+
+    return () => {
+      clearTimeout(t);
+      clearTimeout(fallbackTimer);
+    };
+  }, [onDone]);
+
+  useEffect(() => {
+    if (done) {
+      const t = setTimeout(() => onDone?.(), 200);
+      return () => clearTimeout(t);
+    }
+  }, [done, onDone]);
 
   return (
     <motion.div

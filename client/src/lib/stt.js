@@ -3,25 +3,11 @@
  *
  * Uses the Web Speech API (webkitSpeechRecognition / SpeechRecognition)
  * for continuous real-time speech recognition in the browser.
- *
- * Features:
- * - Continuous recognition with auto-restart
- * - Interim results for live transcript preview
- * - Wake-word detection ("Aegis" / "Commander") routes to status query
- * - Graceful degradation when API unavailable
+ * Built with full exception safety for all modern browsers & Vercel deployment.
  */
 
 const WAKE_WORDS = ["aegis", "commander", "aegis status", "commander status"];
 
-/**
- * Creates a managed STT instance.
- * @param {Object} options
- * @param {function} options.onResult - Called with { text, isFinal } for each result
- * @param {function} options.onWakeWord - Called when a wake word is detected (instead of onResult)
- * @param {function} options.onError - Called with error message
- * @param {function} options.onStateChange - Called with "listening" | "stopped" | "error"
- * @param {string} options.lang - Language code (default: "en-IN")
- */
 export function createSTT(options = {}) {
   const {
     onResult = () => {},
@@ -31,7 +17,12 @@ export function createSTT(options = {}) {
     lang = "en-IN",
   } = options;
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let SpeechRecognition = null;
+  try {
+    if (typeof window !== "undefined") {
+      SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    }
+  } catch (_) {}
 
   if (!SpeechRecognition) {
     return {
@@ -42,11 +33,21 @@ export function createSTT(options = {}) {
     };
   }
 
-  const recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = lang;
-  recognition.maxAlternatives = 1;
+  let recognition;
+  try {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = lang;
+    recognition.maxAlternatives = 1;
+  } catch (err) {
+    return {
+      supported: false,
+      start: () => onError("Failed to initialize speech recognition."),
+      stop: () => {},
+      isListening: () => false,
+    };
+  }
 
   let listening = false;
   let shouldRestart = false;
@@ -57,45 +58,45 @@ export function createSTT(options = {}) {
   };
 
   recognition.onresult = (event) => {
-    let interimTranscript = "";
-    let finalTranscript = "";
+    try {
+      let interimTranscript = "";
+      let finalTranscript = "";
 
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        finalTranscript += transcript;
-      } else {
-        interimTranscript += transcript;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
       }
-    }
 
-    // Show interim results for live preview
-    if (interimTranscript) {
-      onResult({ text: interimTranscript, isFinal: false });
-    }
-
-    // Process final results
-    if (finalTranscript) {
-      const cleaned = finalTranscript.trim();
-      if (!cleaned) return;
-
-      // Check for wake word
-      const lower = cleaned.toLowerCase();
-      const isWakeWord = WAKE_WORDS.some((w) => lower.startsWith(w));
-
-      if (isWakeWord) {
-        // Extract the query after the wake word, if any
-        const query = lower.replace(/^(aegis|commander)\s*/i, "").trim();
-        onWakeWord(query || "status");
-      } else {
-        onResult({ text: cleaned, isFinal: true });
+      if (interimTranscript) {
+        onResult({ text: interimTranscript, isFinal: false });
       }
+
+      if (finalTranscript) {
+        const cleaned = finalTranscript.trim();
+        if (!cleaned) return;
+
+        const lower = cleaned.toLowerCase();
+        const isWakeWord = WAKE_WORDS.some((w) => lower.startsWith(w));
+
+        if (isWakeWord) {
+          const query = lower.replace(/^(aegis|commander)\s*/i, "").trim();
+          onWakeWord(query || "status");
+        } else {
+          onResult({ text: cleaned, isFinal: true });
+        }
+      }
+    } catch (e) {
+      console.warn("[STT onresult error]", e);
     }
   };
 
   recognition.onerror = (event) => {
-    if (event.error === "no-speech") return; // Normal — user paused
-    if (event.error === "aborted") return; // Manual stop
+    if (event.error === "no-speech") return;
+    if (event.error === "aborted") return;
     if (event.error === "not-allowed") {
       listening = false;
       shouldRestart = false;
@@ -109,11 +110,9 @@ export function createSTT(options = {}) {
   recognition.onend = () => {
     listening = false;
     if (shouldRestart) {
-      // Auto-restart for continuous listening
       try {
         recognition.start();
       } catch (e) {
-        // Already started or browser blocked — retry after a short delay
         setTimeout(() => {
           if (shouldRestart) {
             try { recognition.start(); } catch (e2) { /* give up */ }
@@ -134,14 +133,14 @@ export function createSTT(options = {}) {
       try {
         recognition.start();
       } catch (e) {
-        onError("Failed to start speech recognition. Is another tab using the microphone?");
+        onError("Failed to start speech recognition.");
       }
     },
 
     stop() {
       shouldRestart = false;
       if (listening) {
-        recognition.stop();
+        try { recognition.stop(); } catch (_) {}
       }
       onStateChange("stopped");
     },

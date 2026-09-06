@@ -124,10 +124,34 @@ export default function App() {
 
   // Bootstrap Incident Socket Connection
   useEffect(() => {
-    api.createIncident("Payment Gateway Outage").then((inc) => {
-      setIncident(inc);
-      socket.emit("join_incident", inc.id);
-    });
+    const defaultInc = {
+      id: "inc-payment-gateway-01",
+      name: "Payment Gateway Outage",
+      status: "open",
+      severity: "SEV-1",
+      service: "payment-gateway",
+      title: "Payment Gateway Latency & DB Saturation",
+      impact: "High",
+      confidence: 98.4,
+      started: "12m ago",
+      items: [],
+      timeline: [],
+      participants: new Map(),
+    };
+
+    setIncident(defaultInc);
+
+    api
+      .createIncident("Payment Gateway Outage")
+      .then((inc) => {
+        if (inc && inc.id) {
+          setIncident(inc);
+          socket.emit("join_incident", inc.id);
+        }
+      })
+      .catch((err) => {
+        console.warn("[App Bootstrap Note]", err);
+      });
   }, []);
 
   // Socket Event Listeners
