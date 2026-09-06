@@ -131,7 +131,20 @@ GROQ_API_KEY=your_groq_api_key_here
 GROQ_MODEL=openai/gpt-oss-20b
 ```
 
-### 2. Execution Commands
+### 2. Deployment Guides (Render & Vercel)
+
+#### Option A: Deploy on Render (Recommended for WebSockets + Full-Stack Node)
+1. Go to [https://dashboard.render.com](https://dashboard.render.com) and click **New + ➔ Blueprints**.
+2. Connect your GitHub repository: `https://github.com/Mrvikas06/Aegis-ai.git`.
+3. Render auto-detects [render.yaml](file:///c:/Users/vikas/Documents/try/aegis-final-complete/render.yaml) and builds the application Docker container automatically.
+4. Add Environment Variable `GROQ_API_KEY` under Environment settings.
+
+#### Option B: Deploy on Vercel
+1. Go to [https://vercel.com/new](https://vercel.com/new) and import `Mrvikas06/Aegis-ai`.
+2. Vercel auto-detects [vercel.json](file:///c:/Users/vikas/Documents/try/aegis-final-complete/vercel.json).
+3. Click **Deploy**.
+
+### 3. Local Execution Commands
 
 #### Backend Server
 ```bash

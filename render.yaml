@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: aegis-ai
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - key: AGORA_APP_ID
+        value: 3e7c3afde1814bc8bc030558ef76e1a7
+      - key: AGORA_APP_CERTIFICATE
+        value: 10fec23c56ad40ceb25f3843ae79496d
+      - key: AGORA_PIPELINE_ID
+        value: 224c3a143ef64e1c8d6644babca5bb9c
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
