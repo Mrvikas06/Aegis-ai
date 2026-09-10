@@ -2,7 +2,6 @@
 
 > **Sub-Second Real-Time Voice & Multi-Agent Triage Copilot for Engineering Outages**
 
-🌐 **Live Production Deployment**: [https://aegis-ai-beige.vercel.app/](https://aegis-ai-beige.vercel.app/)
 
 Aegis is an autonomous AI Incident Commander designed to reduce **Mean Time To Resolution (MTTR)** during critical engineering outages. By integrating **Agora WebRTC Conversational AI**, **Groq LPU LLM Acceleration**, and **Multi-Agent Telemetry Orchestration**, Aegis converts complex incident triage into an automated, voice-guided command workflow.
 
